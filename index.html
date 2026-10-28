@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Nagaland Lottery — Neural Master Intelligence Studio v12.0</title>
+  <title>Nagaland Lottery — Master Intelligence Studio</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
   <style>
@@ -37,8 +37,8 @@
       <div class="space-y-1">
         <div class="flex flex-wrap items-center gap-2">
           <span class="h-2.5 w-2.5 rounded-full bg-emerald-400 animate-ping"></span>
-          <span class="text-[11px] font-extrabold uppercase tracking-widest text-emerald-400 mono">AUTO-PDF ENGINE • V12.0</span>
-          <span id="liveStatusBadge" class="text-[11px] bg-indigo-500/20 border border-indigo-500/40 text-indigo-300 px-2.5 py-0.5 rounded-md mono font-bold">Auto-Sync Active</span>
+          <span class="text-[11px] font-extrabold uppercase tracking-widest text-emerald-400 mono">AUTO-PDF ENGINE • V12.1</span>
+          <span id="liveStatusBadge" class="text-[11px] bg-indigo-500/20 border border-indigo-500/40 text-indigo-300 px-2.5 py-0.5 rounded-md mono font-bold">Ready</span>
         </div>
         <h1 class="text-2xl md:text-3xl font-black tracking-tight text-white">
           Nagaland State Lottery <span class="bg-gradient-to-r from-indigo-400 via-cyan-300 to-emerald-400 bg-clip-text text-transparent">Master Intelligence Studio</span>
@@ -95,7 +95,7 @@
             <div><span class="text-[10px] font-black uppercase tracking-widest text-amber-400 mono">DEAR MORNING</span><h3 class="text-xl font-black text-white mono">1:00 PM DRAW</h3></div>
             <button onclick="openGazetteModalForLatestSlot('1PM')" class="btn-pro text-xs bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/40 px-3 py-1.5 rounded-xl font-extrabold">Gazette →</button>
           </div>
-          <div id="colCards1PM" class="space-y-3.5"></div>
+          <div id="colCards1PM" class="space-y-3.5"><div class="text-xs text-slate-500 text-center py-4">Loading data...</div></div>
         </div>
         <!-- 6PM -->
         <div class="studio-card rounded-2xl p-5 border-t-4 border-t-cyan-400 space-y-4">
@@ -103,7 +103,7 @@
             <div><span class="text-[10px] font-black uppercase tracking-widest text-cyan-400 mono">DEAR DAY</span><h3 class="text-xl font-black text-white mono">6:00 PM DRAW</h3></div>
             <button onclick="openGazetteModalForLatestSlot('6PM')" class="btn-pro text-xs bg-cyan-500/20 hover:bg-cyan-500/30 text-cyan-300 border border-cyan-500/40 px-3 py-1.5 rounded-xl font-extrabold">Gazette →</button>
           </div>
-          <div id="colCards6PM" class="space-y-3.5"></div>
+          <div id="colCards6PM" class="space-y-3.5"><div class="text-xs text-slate-500 text-center py-4">Loading data...</div></div>
         </div>
         <!-- 8PM -->
         <div class="studio-card rounded-2xl p-5 border-t-4 border-t-fuchsia-400 space-y-4">
@@ -111,7 +111,7 @@
             <div><span class="text-[10px] font-black uppercase tracking-widest text-fuchsia-400 mono">DEAR NIGHT</span><h3 class="text-xl font-black text-white mono">8:00 PM DRAW</h3></div>
             <button onclick="openGazetteModalForLatestSlot('8PM')" class="btn-pro text-xs bg-fuchsia-500/20 hover:bg-fuchsia-500/30 text-fuchsia-300 border border-fuchsia-500/40 px-3 py-1.5 rounded-xl font-extrabold">Gazette →</button>
           </div>
-          <div id="colCards8PM" class="space-y-3.5"></div>
+          <div id="colCards8PM" class="space-y-3.5"><div class="text-xs text-slate-500 text-center py-4">Loading data...</div></div>
         </div>
       </div>
     </section>
@@ -143,7 +143,9 @@
     <!-- PANEL 3: ARCHIVE -->
     <section id="panel-archive" class="hidden space-y-6">
       <div class="studio-card rounded-2xl p-5 space-y-4">
-        <div id="archiveFeedContainer" class="space-y-3 max-h-[600px] overflow-y-auto custom-scroll pr-1"></div>
+        <div id="archiveFeedContainer" class="space-y-3 max-h-[600px] overflow-y-auto custom-scroll pr-1">
+          <div class="text-xs text-slate-500 text-center py-4">Archive loading...</div>
+        </div>
       </div>
     </section>
 
@@ -157,8 +159,15 @@ let masterDB = [];
 let windowDays = 30;
 let cachedMiddleRankings = [];
 let cachedBackRankings = [];
-const CORS_PROXY = 'https://api.allorigins.win/raw?url=';
 
+// Multiple Proxies for reliability
+const PROXIES = [
+  'https://api.allorigins.win/raw?url=',
+  'https://corsproxy.io/?',
+  'https://api.codetabs.com/v1/proxy?quest='
+];
+
+// ===================== UTILITIES =====================
 function showToast(msg, type = 'info') {
   const box = document.getElementById('toastBox');
   const colors = { info: 'border-indigo-500 bg-slate-900/95 text-indigo-200', success: 'border-emerald-500 bg-slate-900/95 text-emerald-200', warn: 'border-amber-500 bg-slate-900/95 text-amber-200' };
@@ -190,45 +199,71 @@ function setWindowTimeframe(days) {
 function getPalta2D(s) { return s.split('').reverse().join(''); }
 function getMirror2D(s) { const m = { '0':'5','1':'6','2':'7','3':'8','4':'9','5':'0','6':'1','7':'2','8':'3','9':'4' }; return s.split('').map(c => m[c] || c).join(''); }
 
-// ===================== DATA LOAD =====================
-function loadData() {
-  try {
-    const data = JSON.parse(localStorage.getItem(DB_KEY));
-    if (Array.isArray(data) && data.length > 0) { masterDB = data; return; }
-  } catch (_) {}
-  // If no data, generate dummy for UI test (Will be overwritten by real data)
-  masterDB = [];
-}
-loadData();
-
 // ===================== PDF FETCHING & PARSING =====================
+async function fetchWithProxy(url) {
+  for (const proxy of PROXIES) {
+    try {
+      const response = await fetch(proxy + encodeURIComponent(url));
+      if (response.ok) {
+        const buffer = await response.arrayBuffer();
+        const header = new TextDecoder("utf-8").decode(buffer.slice(0, 5));
+        if (header.includes('%PDF')) return buffer;
+      }
+    } catch (e) {
+      console.warn(`Proxy failed: ${proxy}`, e.message);
+    }
+  }
+  return null;
+}
+
+async function extractTextFromPdf(pdf) {
+  let allItems = [];
+  for (let i = 1; i <= pdf.numPages; i++) {
+    const page = await pdf.getPage(i);
+    const content = await page.getTextContent();
+    content.items.forEach(item => {
+      if (item.str.trim()) {
+        allItems.push({ str: item.str, x: item.transform[4], y: item.transform[5] });
+      }
+    });
+  }
+  // Sort by Y descending (top to bottom), then X ascending (left to right)
+  allItems.sort((a, b) => {
+    if (Math.abs(a.y - b.y) > 5) return b.y - a.y;
+    return a.x - b.x;
+  });
+  
+  let lines = [];
+  let currentLine = [];
+  let currentY = null;
+  allItems.forEach(item => {
+    if (currentY === null || Math.abs(item.y - currentY) > 5) {
+      if (currentLine.length > 0) lines.push(currentLine.join(' '));
+      currentLine = [item.str];
+      currentY = item.y;
+    } else {
+      currentLine.push(item.str);
+    }
+  });
+  if (currentLine.length > 0) lines.push(currentLine.join(' '));
+  return lines.join('\n');
+}
+
 async function fetchAndParsePdf(dateStr, slot) {
   const [y, m, d] = dateStr.split('-');
   const urlDate = `${d}-${m}-${y}`;
   const slotLower = slot.toLowerCase(); 
   const pdfUrl = `https://lottery.sambad.com/pdf/lottery-sambad-${slotLower}-${urlDate}.pdf`;
-  const proxyUrl = CORS_PROXY + encodeURIComponent(pdfUrl);
   
+  const buffer = await fetchWithProxy(pdfUrl);
+  if (!buffer) return null;
+
   try {
-    const response = await fetch(proxyUrl);
-    if (!response.ok) throw new Error('Network error');
-    
-    const arrayBuffer = await response.arrayBuffer();
-    // Check if it's actually a PDF (starts with %PDF)
-    const header = new TextDecoder("utf-8").decode(arrayBuffer.slice(0, 5));
-    if (!header.includes('%PDF')) throw new Error('Not a valid PDF file');
-
-    const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
-    let fullText = '';
-    for (let i = 1; i <= pdf.numPages; i++) {
-      const page = await pdf.getPage(i);
-      const content = await page.getTextContent();
-      fullText += content.items.map(item => item.str).join(' ') + ' ';
-    }
-
-    return parsePdfText(fullText, dateStr, slot);
+    const pdf = await pdfjsLib.getDocument({ data: buffer }).promise;
+    const text = await extractTextFromPdf(pdf);
+    return parsePdfText(text, dateStr, slot);
   } catch (err) {
-    console.warn(`Fetch failed for ${slot}:`, err.message);
+    console.warn(`Parse failed for ${slot} on ${dateStr}:`, err);
     return null;
   }
 }
@@ -236,34 +271,86 @@ async function fetchAndParsePdf(dateStr, slot) {
 function parsePdfText(text, date, slot) {
   const clean = text.replace(/\s+/g, ' ').trim();
   
-  // 1st Prize (e.g., "79H 68387")
+  // 1. First Prize: e.g., "79H 68387" or "95E 75331"
   let firstPrizeFull = '';
   let firstPrize = '';
-  const fpMatch = clean.match(/([0-9]{2}[A-Z])\s*([0-9]{5})/);
+  const fpMatch = clean.match(/([0-9]{2}[A-Z])\s*(\d{5})/);
   if (fpMatch) {
     firstPrizeFull = `${fpMatch[1]} ${fpMatch[2]}`;
     firstPrize = fpMatch[2];
   }
 
-  // Look for all 5-digit and 4-digit numbers
+  // 2. Extract all numbers (4 or 5 digits)
   const allNums = clean.match(/\b\d{4,5}\b/g) || [];
-  // Filter out dates, prices, etc.
+  
+  // 3. Filter out known non-prize numbers
   const exclude = new Set(['2024','2025','2026','2027','9000','1000','2000','5000','10000', '120', '250', '500']);
   let validNumbers = allNums.filter(n => !exclude.has(n));
   
-  if (firstPrize) validNumbers = validNumbers.filter(n => n !== firstPrize);
+  // Remove 1st prize from the pool
+  if (firstPrize) {
+    validNumbers = validNumbers.filter(n => n !== firstPrize);
+  }
 
-  if (validNumbers.length < 10) return null; // Reject if fake data
+  // 4. Separate by length
+  // 2nd Prize numbers are usually 5-digit (10 numbers)
+  const fiveDigitNums = validNumbers.filter(n => n.length === 5);
+  // 3rd, 4th, 5th Prize numbers are 4-digit (30 numbers)
+  const fourDigitNums = validNumbers.filter(n => n.length === 4);
+
+  const secondPrize = fiveDigitNums.slice(0, 10);
+  const lowerPrizes = fourDigitNums.slice(0, 30);
+
+  if (secondPrize.length === 0 && lowerPrizes.length === 0) return null;
 
   return {
     id: `${date}_${slot}_auto`,
-    date: date, slot: slot,
+    date: date,
+    slot: slot,
     series: firstPrizeFull.split(' ')[0] || '??',
     startDigit: firstPrize ? firstPrize[0] : '5',
-    firstPrizeFull: firstPrizeFull || `??  ${validNumbers[0]}`,
-    firstPrize: firstPrize || validNumbers[0],
-    numbers: validNumbers.slice(0, 52)
+    firstPrizeFull: firstPrizeFull || `??  ${secondPrize[0] || lowerPrizes[0]}`,
+    firstPrize: firstPrize || secondPrize[0] || lowerPrizes[0],
+    numbers: [...secondPrize, ...lowerPrizes] // Combined for analysis
   };
+}
+
+// ===================== AUTO FETCH HISTORY =====================
+async function fetchHistoryIfEmpty() {
+  if (masterDB.length > 0) return;
+  
+  showToast('⏳ Loading last 7 days of results...', 'info');
+  document.getElementById('liveStatusBadge').textContent = 'Fetching History...';
+  
+  const slots = ['1PM', '6PM', '8PM'];
+  const today = new Date();
+  let fetchedCount = 0;
+
+  for (let i = 1; i <= 7; i++) {
+    const d = new Date(today);
+    d.setDate(today.getDate() - i);
+    const dateStr = d.toISOString().slice(0, 10);
+    
+    for (const slot of slots) {
+      const parsed = await fetchAndParsePdf(dateStr, slot);
+      if (parsed) {
+        masterDB.push(parsed);
+        fetchedCount++;
+      }
+      // Small delay to avoid rate limiting
+      await new Promise(r => setTimeout(r, 600));
+    }
+    document.getElementById('liveStatusBadge').textContent = `Loaded ${i * 3}/21...`;
+  }
+
+  masterDB.sort((a, b) => new Date(a.date) - new Date(b.date));
+  localStorage.setItem(DB_KEY, JSON.stringify(masterDB));
+  
+  document.getElementById('liveStatusBadge').textContent = 'Ready';
+  showToast(`✔ Loaded ${fetchedCount} historical draws!`, 'success');
+  
+  runMasterEngine();
+  renderArchiveFeed();
 }
 
 async function triggerAutoSyncAllSlots() {
@@ -290,7 +377,7 @@ async function triggerAutoSyncAllSlots() {
   if (fetchedCount > 0) {
     showToast(`✔ Fetched ${fetchedCount} official PDFs!`, 'success');
   } else {
-    showToast('⚠️ Fetch failed (Proxy/CORS). Using cached data.', 'warn');
+    showToast('⚠️ Fetch failed. Using cached data.', 'warn');
   }
 
   btn.innerHTML = `<span>⚡ SYNC TODAY'S PDFs</span>`;
@@ -325,7 +412,6 @@ function evaluateUniverse(draws, partMode) {
       if (stats[part]) {
         stats[part].hits++;
         seenInDraw.add(part);
-        // Recency Weight: Recent draws have higher multiplier
         const recencyMultiplier = 1 + ((dIdx / draws.length) * 0.5); 
         
         if (posIdx < 10) stats[part].weightedTierHits += (4.0 * recencyMultiplier);
@@ -381,7 +467,9 @@ function evaluateUniverse(draws, partMode) {
 
 function runMasterEngine() {
   if (masterDB.length === 0) {
-    document.getElementById('colCards1PM').innerHTML = '<div class="text-xs text-slate-500 text-center py-4">No Data. Click SYNC.</div>';
+    document.getElementById('colCards1PM').innerHTML = '<div class="text-xs text-rose-400 text-center py-4">No Data. Click SYNC or wait for auto-fetch.</div>';
+    document.getElementById('colCards6PM').innerHTML = '<div class="text-xs text-rose-400 text-center py-4">No Data. Click SYNC.</div>';
+    document.getElementById('colCards8PM').innerHTML = '<div class="text-xs text-rose-400 text-center py-4">No Data. Click SYNC.</div>';
     return;
   }
 
@@ -464,7 +552,8 @@ function renderArchiveFeed() {
   document.getElementById('archiveFeedContainer').innerHTML = list.map(draw => {
     const [y, m, dt] = draw.date.split('-');
     const urlDate = `${dt}-${m}-${y}`;
-    const proxyPdfUrl = CORS_PROXY + encodeURIComponent(`https://lottery.sambad.com/pdf/lottery-sambad-${draw.slot.toLowerCase()}-${urlDate}.pdf`);
+    const pdfUrl = `https://lottery.sambad.com/pdf/lottery-sambad-${draw.slot.toLowerCase()}-${urlDate}.pdf`;
+    const proxyUrl = PROXIES[0] + encodeURIComponent(pdfUrl); // Use primary proxy for view
 
     return `
     <div class="studio-card rounded-xl p-4 flex flex-col lg:flex-row justify-between items-start lg:items-center gap-3">
@@ -475,14 +564,24 @@ function renderArchiveFeed() {
         </div>
         <div class="text-xs mt-1 text-slate-400"><b>1st:</b> ${draw.firstPrizeFull}</div>
       </div>
-      <a href="${proxyPdfUrl}" target="_blank" class="btn-pro bg-indigo-600 text-white px-3 py-1.5 rounded-lg text-xs font-bold">👁️ View PDF</a>
+      <a href="${proxyUrl}" target="_blank" class="btn-pro bg-indigo-600 text-white px-3 py-1.5 rounded-lg text-xs font-bold">👁️ View PDF</a>
     </div>
   `}).join('');
 }
 
-// Start
+// Load from LocalStorage
+try {
+  const stored = JSON.parse(localStorage.getItem(DB_KEY));
+  if (stored && stored.length > 0) masterDB = stored;
+} catch (e) {}
+
 runMasterEngine();
 renderArchiveFeed();
+
+// Auto-fetch if empty
+if (masterDB.length === 0) {
+  fetchHistoryIfEmpty();
+}
 </script>
 </body>
 </html>
