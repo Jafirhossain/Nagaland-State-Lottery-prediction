@@ -3,472 +3,432 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Nagaland Lottery — Master Intelligence Studio</title>
+  <title>Lottery Master Intelligence — Auto-Pilot</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@500;600;700;800&display=swap');
-    :root { --bg-primary: #05070d; --card-bg: rgba(11, 15, 25, 0.90); }
     body {
-      font-family: 'Inter', sans-serif; background-color: var(--bg-primary);
-      background-image: radial-gradient(at 0% 0%, rgba(79, 70, 229, 0.15) 0px, transparent 50%), radial-gradient(at 100% 0%, rgba(16, 185, 129, 0.12) 0px, transparent 50%), radial-gradient(at 50% 100%, rgba(217, 70, 239, 0.08) 0px, transparent 50%);
+      font-family: 'Inter', sans-serif; background-color: #05070d;
+      background-image: radial-gradient(at 0% 0%, rgba(79, 70, 229, 0.15) 0px, transparent 50%), radial-gradient(at 100% 0%, rgba(16, 185, 129, 0.12) 0px, transparent 50%);
       color: #f8fafc; min-height: 100vh;
     }
     .mono { font-family: 'JetBrains Mono', monospace; }
-    .studio-card { background: var(--card-bg); backdrop-filter: blur(18px); border: 1px solid rgba(255, 255, 255, 0.08); transition: all 0.25s; }
-    .studio-card:hover { border-color: rgba(99, 102, 241, 0.5); box-shadow: 0 14px 38px -12px rgba(99, 102, 241, 0.3); }
-    .btn-pro { transition: all 0.2s; cursor: pointer; user-select: none; position: relative; overflow: hidden; }
-    .btn-pro:active { transform: scale(0.95); }
-    .custom-scroll::-webkit-scrollbar { width: 6px; height: 6px; }
-    .custom-scroll::-webkit-scrollbar-thumb { background: #334155; border-radius: 6px; }
-    @keyframes redPulse { 0% { transform: scale(0.96); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); } 70% { transform: scale(1); box-shadow: 0 0 0 8px rgba(239, 68, 68, 0); } 100% { transform: scale(0.96); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); } }
-    .red-marker-hit { border: 2px solid #ef4444 !important; background-color: rgba(239, 68, 68, 0.2) !important; color: #fca5a5 !important; animation: redPulse 2s infinite; }
-    .gazette-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(68px, 1fr)); gap: 6px; }
+    .glass { background: rgba(11, 15, 25, 0.90); backdrop-filter: blur(18px); border: 1px solid rgba(255, 255, 255, 0.08); }
+    
+    /* লাল বৃত্তের অ্যানিমেশন (Red Circle Hit) */
+    @keyframes redPulse {
+      0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.8); border-color: #ef4444; }
+      70% { transform: scale(1.05); box-shadow: 0 0 0 8px rgba(239, 68, 68, 0); border-color: #ef4444; }
+      100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); border-color: #ef4444; }
+    }
+    .red-hit {
+      border: 2px solid #ef4444 !important;
+      background-color: rgba(239, 68, 68, 0.2) !important;
+      color: #fca5a5 !important;
+      animation: redPulse 1.5s infinite;
+      border-radius: 50%; 
+      display: inline-flex; align-items: center; justify-content: center;
+    }
+    /* লোডিং স্পিনার */
+    .loader {
+      border: 3px solid rgba(255,255,255,0.1);
+      border-top-color: #10b981;
+      border-radius: 50%;
+      width: 20px; height: 20px;
+      animation: spin 1s linear infinite;
+      display: inline-block; vertical-align: middle; margin-right: 8px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
   </style>
 </head>
 <body class="p-3 md:p-6">
 
-  <div id="toastBox" class="fixed bottom-5 right-5 z-50 space-y-2 max-w-sm pointer-events-none"></div>
+  <div id="toast" class="fixed top-5 right-5 z-50 bg-slate-800 border-l-4 border-emerald-500 text-white px-4 py-3 rounded shadow-lg hidden text-sm font-bold"></div>
 
-  <div class="max-w-7xl mx-auto space-y-6">
+  <div class="max-w-6xl mx-auto space-y-6">
 
     <!-- HEADER -->
-    <header class="studio-card rounded-2xl p-5 flex flex-col xl:flex-row justify-between items-start xl:items-center gap-4">
-      <div class="space-y-1">
-        <div class="flex flex-wrap items-center gap-2">
-          <span class="h-2.5 w-2.5 rounded-full bg-emerald-400 animate-ping"></span>
-          <span class="text-[11px] font-extrabold uppercase tracking-widest text-emerald-400 mono">AUTO-PDF ENGINE • V13.0</span>
-          <span id="liveStatusBadge" class="text-[11px] bg-indigo-500/20 border border-indigo-500/40 text-indigo-300 px-2.5 py-0.5 rounded-md mono font-bold">Waiting for Data</span>
-        </div>
-        <h1 class="text-2xl md:text-3xl font-black tracking-tight text-white">
-          Nagaland State Lottery <span class="bg-gradient-to-r from-indigo-400 via-cyan-300 to-emerald-400 bg-clip-text text-transparent">Master Intelligence Studio</span>
-        </h1>
+    <header class="glass rounded-2xl p-6 flex flex-col md:flex-row justify-between items-center gap-4">
+      <div>
+        <h1 class="text-2xl font-black text-white">Lottery Master <span class="text-emerald-400">Intelligence</span></h1>
+        <p class="text-xs text-slate-400 mt-1">Fully Automated Logic Engine • Strict Palta/Mirror Analysis</p>
       </div>
-
-      <div class="flex flex-wrap items-center gap-2.5 w-full xl:w-auto">
-        <div class="bg-slate-950/95 border border-slate-800 rounded-xl p-1 flex text-xs font-black mono">
-          <button onclick="setWindowTimeframe(7)" id="tfBtn7" class="btn-pro px-3 py-1.5 rounded-lg text-slate-400 hover:text-white">1W</button>
-          <button onclick="setWindowTimeframe(30)" id="tfBtn30" class="btn-pro px-3 py-1.5 rounded-lg bg-indigo-600 text-white shadow">1M</button>
-          <button onclick="setWindowTimeframe(90)" id="tfBtn90" class="btn-pro px-3 py-1.5 rounded-lg text-slate-400 hover:text-white">3M</button>
-        </div>
-        <button onclick="triggerAutoSyncAllSlots()" id="syncBtn" class="btn-pro bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-slate-950 font-black px-4 py-2 rounded-xl text-xs md:text-sm shadow-lg flex items-center gap-1.5">
-          <span>⚡ SYNC PDFs</span>
-        </button>
+      <div id="syncStatus" class="flex items-center text-xs text-indigo-300 bg-indigo-500/10 px-3 py-2 rounded-xl border border-indigo-500/20">
+        <span class="loader"></span> Auto-Syncing Data...
       </div>
     </header>
 
-    <!-- ERROR / MANUAL INPUT BANNER -->
-    <div id="errorBanner" class="studio-card rounded-2xl p-5 border border-rose-500/50 bg-rose-500/5 space-y-3">
-      <div class="flex items-center gap-2">
-        <span class="text-2xl">⚠️</span>
-        <h3 class="text-sm font-black text-rose-400 uppercase tracking-wide">অটোমেটিক ডেটা লোড হচ্ছে না (সার্ভার ব্লকড)</h3>
+    <!-- PREDICTIONS GRID -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <!-- 1PM -->
+      <div class="glass rounded-2xl p-4 border-t-4 border-amber-400">
+        <div class="flex justify-between items-center mb-4 border-b border-slate-800 pb-2">
+          <h3 class="text-lg font-black text-white">1:00 PM</h3>
+          <span class="text-[10px] bg-amber-500/20 text-amber-300 px-2 py-1 rounded">Morning</span>
+        </div>
+        <div id="pred-1PM" class="space-y-3"><p class="text-xs text-slate-500">Analyzing...</p></div>
       </div>
-      <p class="text-xs text-slate-300">ওয়েবসাইটের সিকিউরিটির কারণে পিডিএফ অটোমেটিক ডাউনলোড হচ্ছে না। দয়া করে অফিসিয়াল সাইট থেকে পিডিএফ ফাইলটি ওপেন করে তার ভেতরের লেখাগুলো কপি করে নিচের বক্সে পেস্ট করুন।</p>
-      
-      <div class="grid grid-cols-1 md:grid-cols-4 gap-2">
-        <input type="date" id="manualDate" class="bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-xs mono text-white">
-        <select id="manualSlot" class="bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-xs mono text-white">
-          <option value="1PM">1:00 PM</option>
-          <option value="6PM">6:00 PM</option>
-          <option value="8PM">8:00 PM</option>
-        </select>
-        <button onclick="parseManualPaste()" class="col-span-1 md:col-span-2 btn-pro bg-indigo-600 hover:bg-indigo-500 text-white font-extrabold px-4 py-2 rounded-xl text-xs shadow-lg">
-          ✔ Save & Predict
-        </button>
+      <!-- 6PM -->
+      <div class="glass rounded-2xl p-4 border-t-4 border-cyan-400">
+        <div class="flex justify-between items-center mb-4 border-b border-slate-800 pb-2">
+          <h3 class="text-lg font-black text-white">6:00 PM</h3>
+          <span class="text-[10px] bg-cyan-500/20 text-cyan-300 px-2 py-1 rounded">Day</span>
+        </div>
+        <div id="pred-6PM" class="space-y-3"><p class="text-xs text-slate-500">Analyzing...</p></div>
       </div>
-      <textarea id="manualText" rows="3" placeholder="উদাহরণস্বরূপ পেস্ট করুন: 79H 68387 15545 20401 22541 39681 ..." class="w-full bg-slate-950 border border-slate-700 rounded-xl p-3 text-xs mono text-white focus:border-indigo-500 focus:outline-none"></textarea>
-    </div>
-
-    <!-- TELEMETRY -->
-    <div class="grid grid-cols-2 lg:grid-cols-4 gap-3">
-      <div class="studio-card rounded-xl p-3.5 border-l-4 border-l-indigo-500">
-        <div class="text-[11px] font-bold uppercase tracking-wider text-slate-400">Analyzed Draws</div>
-        <div id="statTotalDraws" class="text-2xl font-black text-white mono mt-0.5">0</div>
-      </div>
-      <div class="studio-card rounded-xl p-3.5 border-l-4 border-l-emerald-500">
-        <div class="text-[11px] font-bold uppercase tracking-wider text-slate-400">Indexed Tickets</div>
-        <div id="statTotalTickets" class="text-2xl font-black text-white mono mt-0.5">0</div>
-      </div>
-      <div class="studio-card rounded-xl p-3.5 border-l-4 border-l-cyan-400">
-        <div class="text-[11px] font-bold uppercase tracking-wider text-slate-400">#1 Dominant Middle</div>
-        <div id="statHotMiddle" class="text-2xl font-black text-cyan-300 mono mt-0.5">--</div>
-      </div>
-      <div class="studio-card rounded-xl p-3.5 border-l-4 border-l-fuchsia-500">
-        <div class="text-[11px] font-bold uppercase tracking-wider text-slate-400">#1 High-Chance Back</div>
-        <div id="statHotBack" class="text-2xl font-black text-fuchsia-300 mono mt-0.5">--</div>
+      <!-- 8PM -->
+      <div class="glass rounded-2xl p-4 border-t-4 border-fuchsia-400">
+        <div class="flex justify-between items-center mb-4 border-b border-slate-800 pb-2">
+          <h3 class="text-lg font-black text-white">8:00 PM</h3>
+          <span class="text-[10px] bg-fuchsia-500/20 text-fuchsia-300 px-2 py-1 rounded">Night</span>
+        </div>
+        <div id="pred-8PM" class="space-y-3"><p class="text-xs text-slate-500">Analyzing...</p></div>
       </div>
     </div>
 
-    <!-- NAVIGATION -->
-    <nav class="flex gap-2 overflow-x-auto pb-1 border-b border-slate-800">
-      <button onclick="switchTab('predictions')" id="navBtn-predictions" class="btn-pro px-4 py-2.5 rounded-xl text-xs md:text-sm font-extrabold bg-indigo-600/25 text-indigo-300 border border-indigo-500/50 whitespace-nowrap">🎯 AI Predictions</button>
-      <button onclick="switchTab('archive')" id="navBtn-archive" class="btn-pro px-4 py-2.5 rounded-xl text-xs md:text-sm font-extrabold text-slate-400 hover:text-white border border-transparent whitespace-nowrap">🏛️ History Archive</button>
-    </nav>
-
-    <!-- PANEL 1: PREDICTIONS -->
-    <section id="panel-predictions" class="space-y-6">
-      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div class="studio-card rounded-2xl p-5 border-t-4 border-t-amber-400 space-y-4">
-          <h3 class="text-xl font-black text-white mono border-b border-slate-800 pb-2">1:00 PM DRAW</h3>
-          <div id="colCards1PM" class="space-y-3.5"><div class="text-xs text-rose-400 text-center py-4">No Data.</div></div>
-        </div>
-        <div class="studio-card rounded-2xl p-5 border-t-4 border-t-cyan-400 space-y-4">
-          <h3 class="text-xl font-black text-white mono border-b border-slate-800 pb-2">6:00 PM DRAW</h3>
-          <div id="colCards6PM" class="space-y-3.5"><div class="text-xs text-rose-400 text-center py-4">No Data.</div></div>
-        </div>
-        <div class="studio-card rounded-2xl p-5 border-t-4 border-t-fuchsia-400 space-y-4">
-          <h3 class="text-xl font-black text-white mono border-b border-slate-800 pb-2">8:00 PM DRAW</h3>
-          <div id="colCards8PM" class="space-y-3.5"><div class="text-xs text-rose-400 text-center py-4">No Data.</div></div>
-        </div>
+    <!-- HISTORY & HITS -->
+    <div class="glass rounded-2xl p-5">
+      <h3 class="text-lg font-black text-white mb-2">📜 History & Hits</h3>
+      <p class="text-xs text-slate-400 mb-4">প্রেডিকশন করা নাম্বার রেজাল্টে মিললে সেটি <b class="text-rose-400">লাল বৃত্তে (Red Circle)</b> ঘেরা থাকবে।</p>
+      <div id="historyContainer" class="space-y-4 max-h-[600px] overflow-y-auto pr-2">
+        <p class="text-xs text-slate-500">Loading history...</p>
       </div>
-    </section>
+    </div>
 
-    <!-- PANEL 2: ARCHIVE -->
-    <section id="panel-archive" class="hidden space-y-6">
-      <div class="studio-card rounded-2xl p-5 space-y-4">
-        <div id="archiveFeedContainer" class="space-y-3 max-h-[600px] overflow-y-auto custom-scroll pr-1">
-          <div class="text-xs text-slate-500 text-center py-4">Archive empty.</div>
-        </div>
-      </div>
-    </section>
+    <!-- FOOTER (Required for API Verification) -->
+    <footer class="text-center py-6 border-t border-slate-800/50 mt-10">
+      <p class="text-xs text-slate-500">
+        Powered by <a href="https://lottery.sambad.com/" class="text-emerald-500 hover:underline">Dear Lottery</a> API
+      </p>
+    </footer>
 
   </div>
 
 <script>
-if (window['pdfjsLib']) { pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js'; }
+// =====================================================================
+// 🔴 এখানে আপনার API টোকেনটি পেস্ট করুন (আপনার স্ক্রিনশট থেকে পাওয়া টোকেন)
+// =====================================================================
+const MY_API_TOKEN = "PASTE_YOUR_TOKEN_HERE"; 
 
-const DB_KEY = 'NAGALAND_MASTER_V13';
-let masterDB = [];
-let windowDays = 30;
-let cachedMiddleRankings = [];
-let cachedBackRankings = [];
+// ================= DATA STORAGE =================
+const DB_KEY = 'LOTTERY_AUTOPILOT_DATA';
+const PRED_KEY = 'LOTTERY_AUTOPILOT_PREDS';
+let allData = JSON.parse(localStorage.getItem(DB_KEY) || '[]');
+let savedPredictions = JSON.parse(localStorage.getItem(PRED_KEY) || '[]');
 
-// Set default date to today
-document.getElementById('manualDate').valueAsDate = new Date();
-
-function showToast(msg, type = 'info') {
-  const box = document.getElementById('toastBox');
-  const colors = { info: 'border-indigo-500 bg-slate-900/95 text-indigo-200', success: 'border-emerald-500 bg-slate-900/95 text-emerald-200', warn: 'border-amber-500 bg-slate-900/95 text-amber-200' };
-  const el = document.createElement('div');
-  el.className = `px-4 py-3 rounded-xl border-l-4 shadow-2xl text-xs font-extrabold mono transition-all duration-300 ${colors[type] || colors.info}`;
-  el.innerHTML = msg; box.appendChild(el);
-  setTimeout(() => { el.style.opacity = '0'; setTimeout(() => el.remove(), 280); }, 3200);
+// ================= UTILITIES =================
+function showToast(msg, isError = false) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = `fixed top-5 right-5 z-50 px-4 py-3 rounded shadow-lg text-sm font-bold border-l-4 ${isError ? 'border-rose-500 bg-slate-800 text-rose-200' : 'border-emerald-500 bg-slate-800 text-emerald-200'}`;
+  t.classList.remove('hidden');
+  setTimeout(() => t.classList.add('hidden'), 3000);
 }
 
-function switchTab(tab) {
-  ['predictions', 'archive'].forEach(t => {
-    document.getElementById('panel-' + t).classList.add('hidden');
-    document.getElementById('navBtn-' + t).className = 'btn-pro px-4 py-2.5 rounded-xl text-xs md:text-sm font-extrabold text-slate-400 hover:text-white border border-transparent whitespace-nowrap';
-  });
-  document.getElementById('panel-' + tab).classList.remove('hidden');
-  document.getElementById('navBtn-' + tab).className = 'btn-pro px-4 py-2.5 rounded-xl text-xs md:text-sm font-extrabold bg-indigo-600/25 text-indigo-300 border border-indigo-500/50 whitespace-nowrap';
-  if (tab === 'archive') renderArchiveFeed();
-}
+function getPalta(s) { return s.split('').reverse().join(''); }
+function getMirror(s) { const m = { '0':'5','1':'6','2':'7','3':'8','4':'9','5':'0','6':'1','7':'2','8':'3','9':'4' }; return s.split('').map(c => m[c] || c).join(''); }
 
-function setWindowTimeframe(days) {
-  windowDays = days;
-  [7, 30, 90].forEach(d => {
-    document.getElementById('tfBtn' + d).className = (d === days) ? 'btn-pro px-3 py-1.5 rounded-lg bg-indigo-600 text-white shadow' : 'btn-pro px-3 py-1.5 rounded-lg text-slate-400 hover:text-white';
-  });
-  runMasterEngine();
-}
-
-function getPalta2D(s) { return s.split('').reverse().join(''); }
-function getMirror2D(s) { const m = { '0':'5','1':'6','2':'7','3':'8','4':'9','5':'0','6':'1','7':'2','8':'3','9':'4' }; return s.split('').map(c => m[c] || c).join(''); }
-
-// ===================== MANUAL INPUT PARSER =====================
-function parseManualPaste() {
-  const raw = document.getElementById('manualText').value.trim();
-  const date = document.getElementById('manualDate').value;
-  const slot = document.getElementById('manualSlot').value;
-
-  if (!raw) return showToast('⚠️ Please paste text first!', 'warn');
-  if (!date) return showToast('⚠️ Please select a date!', 'warn');
-
-  const clean = raw.replace(/\s+/g, ' ').trim();
+// ================= AUTO API FETCHING =================
+async function fetchResult(dateStr, slot) {
+  if (!MY_API_TOKEN || MY_API_TOKEN === "PASTE_YOUR_TOKEN_HERE") return null;
   
-  // Find first prize (e.g., 79H 68387)
-  let fpMatch = clean.match(/([0-9]{2}[A-Z])\s*(\d{5})/);
-  let firstPrizeFull = fpMatch ? `${fpMatch[1]} ${fpMatch[2]}` : '?? ?????';
-  let firstPrize = fpMatch ? fpMatch[2] : '00000';
-
-  // Extract all 4 and 5 digit numbers
-  const allNums = clean.match(/\b\d{4,5}\b/g) || [];
-  const exclude = new Set(['2024','2025','2026','2027','9000','1000','2000','5000','10000', '120', '250', '500']);
-  let validNumbers = allNums.filter(n => !exclude.has(n) && n !== firstPrize);
-
-  if (validNumbers.length < 5) return showToast('⚠️ Not enough numbers found.', 'warn');
-
-  const newRecord = {
-    id: `${date}_${slot}_manual`,
-    date: date,
-    slot: slot,
-    series: firstPrizeFull.split(' ')[0],
-    startDigit: firstPrize[0],
-    firstPrizeFull: firstPrizeFull,
-    firstPrize: firstPrize,
-    numbers: validNumbers.slice(0, 52)
-  };
-
-  // Remove existing record for this date/slot if it exists
-  masterDB = masterDB.filter(d => !(d.date === date && d.slot === slot));
-  masterDB.push(newRecord);
-  masterDB.sort((a, b) => new Date(a.date) - new Date(b.date));
+  const [y, m, d] = dateStr.split('-');
+  const formattedDate = `${d}-${m}-${y}`;
+  const url = `https://api.sambad.com/v2/dear/result?date=${formattedDate}&slot=${slot.toLowerCase()}&access-token=${MY_API_TOKEN}`;
   
-  localStorage.setItem(DB_KEY, JSON.stringify(masterDB));
-  
-  document.getElementById('manualText').value = '';
-  document.getElementById('errorBanner').classList.add('hidden');
-  showToast(`✔ Saved data for ${date} ${slot}!`, 'success');
-  
-  runMasterEngine();
-  renderArchiveFeed();
-}
-
-// ===================== AUTO FETCH (FALLBACK) =====================
-async function triggerAutoSyncAllSlots() {
-  showToast('⚡ Trying auto-fetch (may fail due to CORS)...', 'info');
-  document.getElementById('liveStatusBadge').textContent = 'Fetching...';
-  
-  const today = new Date().toISOString().slice(0, 10);
-  const slots = ['1PM', '6PM', '8PM'];
-  let fetchedCount = 0;
-  const proxy = 'https://api.allorigins.win/raw?url=';
-
-  for (const slot of slots) {
-    const [y, m, d] = today.split('-');
-    const pdfUrl = `https://lottery.sambad.com/pdf/lottery-sambad-${slot.toLowerCase()}-${d}-${m}-${y}.pdf`;
-    
-    try {
-      const res = await fetch(proxy + encodeURIComponent(pdfUrl));
-      if (!res.ok) continue;
-      const buffer = await res.arrayBuffer();
-      const header = new TextDecoder("utf-8").decode(buffer.slice(0, 5));
-      if (!header.includes('%PDF')) continue;
-
-      const pdf = await pdfjsLib.getDocument({ data: buffer }).promise;
-      let text = '';
-      for (let i = 1; i <= pdf.numPages; i++) {
-        const page = await pdf.getPage(i);
-        const content = await page.getTextContent();
-        text += content.items.map(item => item.str).join(' ') + ' ';
-      }
+  try {
+    const res = await fetch(url);
+    const json = await res.json();
+    if (json.success && json.data) {
+      let allNums = [];
+      const extractNums = (obj) => {
+        for (let key in obj) {
+          if (Array.isArray(obj[key])) {
+            obj[key].forEach(val => { if(typeof val === 'string' && val.match(/^\d{4,5}$/)) allNums.push(val); });
+          } else if (typeof obj[key] === 'object' && obj[key] !== null) {
+            extractNums(obj[key]);
+          }
+        }
+      };
+      extractNums(json.data);
       
-      const clean = text.replace(/\s+/g, ' ').trim();
-      const fpMatch = clean.match(/([0-9]{2}[A-Z])\s*(\d{5})/);
-      const allNums = clean.match(/\b\d{4,5}\b/g) || [];
-      const exclude = new Set(['2024','2025','2026','2027','9000','1000','2000','5000','10000']);
-      let validNumbers = allNums.filter(n => !exclude.has(n));
-      if (fpMatch) validNumbers = validNumbers.filter(n => n !== fpMatch[2]);
-
-      if (validNumbers.length >= 5) {
-        masterDB = masterDB.filter(r => !(r.date === today && r.slot === slot));
-        masterDB.push({
-          id: `${today}_${slot}_auto`, date: today, slot: slot,
-          series: fpMatch ? fpMatch[1] : '??', startDigit: fpMatch ? fpMatch[2][0] : '0',
-          firstPrizeFull: fpMatch ? `${fpMatch[1]} ${fpMatch[2]}` : '?? ?????',
-          firstPrize: fpMatch ? fpMatch[2] : '00000', numbers: validNumbers
-        });
-        fetchedCount++;
+      allNums = [...new Set(allNums)].filter(n => !['2024','2025','2026','1000','5000','10000','120','250','500'].includes(n));
+      
+      if (allNums.length >= 5) {
+        return { date: dateStr, slot: slot, firstPrize: json.data.first_prize || '??', numbers: allNums };
       }
-    } catch (e) {
-      console.warn(e);
+    }
+  } catch (err) {
+    console.warn("Fetch error:", err);
+  }
+  return null;
+}
+
+// ================= AUTO SYNC ON LOAD =================
+async function autoSync() {
+  if (!MY_API_TOKEN || MY_API_TOKEN === "PASTE_YOUR_TOKEN_HERE") {
+    document.getElementById('syncStatus').innerHTML = '⚠️ API Token Missing. Paste it in code.';
+    document.getElementById('syncStatus').className = 'flex items-center text-xs text-rose-300 bg-rose-500/10 px-3 py-2 rounded-xl border border-rose-500/20';
+    renderUI(); // Render whatever demo data we have
+    return;
+  }
+
+  const today = new Date();
+  const todayStr = today.toISOString().split('T')[0];
+  let fetchedAny = false;
+
+  // 1. Fetch past 7 days for deep logic (if we don't have enough data)
+  if (allData.length < 15) {
+    for (let i = 1; i <= 7; i++) {
+      const d = new Date(today); d.setDate(d.getDate() - i);
+      const dStr = d.toISOString().split('T')[0];
+      for (const slot of ['1PM', '6PM', '8PM']) {
+        const data = await fetchResult(dStr, slot);
+        if (data) {
+          if (!allData.some(x => x.date === dStr && x.slot === slot)) {
+            allData.push(data);
+            fetchedAny = true;
+          }
+        }
+      }
     }
   }
 
-  if (fetchedCount > 0) {
-    masterDB.sort((a, b) => new Date(a.date) - new Date(b.date));
-    localStorage.setItem(DB_KEY, JSON.stringify(masterDB));
-    showToast(`✔ Fetched ${fetchedCount} PDFs successfully!`, 'success');
-    document.getElementById('liveStatusBadge').textContent = 'Synced';
-    runMasterEngine();
-    renderArchiveFeed();
-  } else {
-    showToast('❌ Auto-Fetch blocked by server. Please use Manual Paste.', 'warn');
-    document.getElementById('liveStatusBadge').textContent = 'Blocked';
-    document.getElementById('errorBanner').classList.remove('hidden');
+  // 2. Fetch today's data
+  for (const slot of ['1PM', '6PM', '8PM']) {
+    const data = await fetchResult(todayStr, slot);
+    if (data) {
+      allData = allData.filter(d => !(d.date === todayStr && d.slot === slot));
+      allData.push(data);
+      fetchedAny = true;
+    }
   }
+
+  if (fetchedAny) {
+    allData.sort((a, b) => new Date(a.date) - new Date(b.date));
+    localStorage.setItem(DB_KEY, JSON.stringify(allData));
+    evaluateHits();
+  }
+
+  document.getElementById('syncStatus').innerHTML = '✅ System Up to Date';
+  document.getElementById('syncStatus').className = 'flex items-center text-xs text-emerald-300 bg-emerald-500/10 px-3 py-2 rounded-xl border border-emerald-500/20';
+  
+  renderUI();
 }
 
-// ===================== ALGORITHM =====================
-function evaluateUniverse(draws, partMode) {
+// ================= THE PREDICTION LOGIC (DEEP LOGIC) =================
+function generateLogicPredictions(targetSlot) {
+  let slotData = allData.filter(d => d.slot === targetSlot);
+  if (slotData.length < 3) slotData = allData;
+  if (slotData.length === 0) return null;
+
   const stats = {};
   for (let i = 0; i < 100; i++) {
     const k = String(i).padStart(2, '0');
-    stats[k] = { key: k, hits: 0, weightedTierHits: 0, drawIndices: [], firstPrizeHits: 0, partnerCounts: {}, sampleSeries: '??' };
+    stats[k] = { key: k, score: 0, hits: 0, lastSeenIdx: -1, reasons: [] };
   }
 
-  draws.forEach((draw, dIdx) => {
-    const fpNum = draw.firstPrize.length === 5 ? draw.firstPrize.slice(1) : draw.firstPrize;
-    const fpMid = fpNum.slice(0, 2);
-    if (stats[fpMid]) {
-      stats[fpMid].firstPrizeHits++;
-      if (draw.series) stats[fpMid].sampleSeries = draw.series;
-    }
+  const totalDraws = slotData.length;
 
-    const seenInDraw = new Set();
+  slotData.forEach((draw, dIdx) => {
     draw.numbers.forEach((num, posIdx) => {
-      const num4 = num.length === 5 ? num.slice(1) : num; 
+      const num4 = num.length === 5 ? num.slice(1) : num;
       const mid = num4.slice(0, 2);
       const bck = num4.slice(2, 4);
-      const part = partMode === 'MIDDLE' ? mid : bck;
-      const partner = partMode === 'MIDDLE' ? bck : mid;
-
-      if (stats[part]) {
-        stats[part].hits++;
-        seenInDraw.add(part);
-        const recencyMultiplier = 1 + ((dIdx / draws.length) * 0.5); 
-        
-        if (posIdx < 10) stats[part].weightedTierHits += (4.0 * recencyMultiplier);
-        else if (posIdx < 20) stats[part].weightedTierHits += (2.5 * recencyMultiplier);
-        else if (posIdx < 30) stats[part].weightedTierHits += (1.8 * recencyMultiplier);
-        else stats[part].weightedTierHits += (1.0 * recencyMultiplier);
-
-        stats[part].partnerCounts[partner] = (stats[part].partnerCounts[partner] || 0) + 1;
+      
+      if (stats[mid]) {
+        stats[mid].hits++;
+        stats[mid].lastSeenIdx = dIdx;
+        if (posIdx < 2) stats[mid].score += 5; // High weight for 1st prize
+      }
+      if (stats[bck]) {
+        stats[bck].hits++;
+        stats[bck].lastSeenIdx = dIdx;
+        if (posIdx < 2) stats[bck].score += 5;
       }
     });
-    seenInDraw.forEach(p => stats[p].drawIndices.push(dIdx));
   });
 
-  const totalDraws = draws.length;
-  const lastDraw = draws[totalDraws - 1];
-  const lastSet = new Set();
+  const lastDraw = slotData[totalDraws - 1];
+  const lastNums = new Set();
   if (lastDraw) {
-    lastDraw.numbers.forEach(n => {
-      const num4 = n.length === 5 ? n.slice(1) : n;
-      lastSet.add(partMode === 'MIDDLE' ? num4.slice(0, 2) : num4.slice(2, 4));
+    lastDraw.numbers.forEach(num => {
+      const num4 = num.length === 5 ? num.slice(1) : num;
+      lastNums.add(num4.slice(0, 2));
+      lastNums.add(num4.slice(2, 4));
     });
   }
 
-  return Object.values(stats).map(item => {
-    const idxs = item.drawIndices;
-    let meanGap = totalDraws;
-    if (idxs.length > 1) {
-      let sum = 0;
-      for (let i = 1; i < idxs.length; i++) sum += (idxs[i] - idxs[i - 1]);
-      meanGap = +(sum / (idxs.length - 1)).toFixed(1);
+  const ranked = Object.values(stats).map(item => {
+    const gap = totalDraws - 1 - item.lastSeenIdx;
+    const avgGap = item.hits > 0 ? (totalDraws / item.hits) : totalDraws;
+    let logicReasons = [];
+
+    item.score += (item.hits / totalDraws) * 50;
+
+    if (gap > avgGap && gap > 2) {
+      item.score += 40;
+      logicReasons.push(`Overdue (${gap}d)`);
+    } else if (gap === 0) {
+      item.score -= 30; 
+      logicReasons.push(`Saturation`);
     }
-    const currGap = idxs.length > 0 ? (totalDraws - 1 - idxs[idxs.length - 1]) : totalDraws;
 
-    const palta = getPalta2D(item.key);
-    const mirror = getMirror2D(item.key);
-    const hasPalta = lastSet.has(palta);
-    const hasMirror = lastSet.has(mirror);
+    if (lastNums.has(getPalta(item.key))) {
+      item.score += 35;
+      logicReasons.push(`Palta Active`);
+    }
+    if (lastNums.has(getMirror(item.key))) {
+      item.score += 25;
+      logicReasons.push(`Mirror Active`);
+    }
 
-    let score = (item.weightedTierHits / Math.max(1, totalDraws)) * 20;
-    let reasons = [];
-
-    if (item.hits >= 2 && currGap >= meanGap && currGap <= meanGap * 2.5) { score += 30; reasons.push(`Overdue (Gap: ${currGap}d)`); }
-    else if (currGap === 0) { score -= 25; reasons.push(`Saturation Risk`); }
-    
-    if (hasPalta && currGap > 0) { score += 15; reasons.push(`Palta Active`); }
-    if (hasMirror && currGap > 0) { score += 15; reasons.push(`Mirror Active`); }
-    if (item.firstPrizeHits > 0) { score += 10; reasons.push(`1st Prize Affinity`); }
-
-    const conf = Math.min(98, Math.max(10, Math.round(score)));
-    return { ...item, meanGap, currGap, palta, mirror, score: conf, primaryReason: reasons[0] || `Consistent Hit` };
+    return { ...item, gap, score: Math.max(0, Math.round(item.score)), reasons: logicReasons };
   });
-}
 
-function runMasterEngine() {
-  document.getElementById('errorBanner').classList.add('hidden');
+  ranked.sort((a, b) => b.score - a.score);
 
-  if (masterDB.length === 0) {
-    document.getElementById('errorBanner').classList.remove('hidden'); // Show input if empty
-    document.getElementById('colCards1PM').innerHTML = '<div class="text-xs text-slate-500 text-center py-4">Waiting for data...</div>';
-    document.getElementById('colCards6PM').innerHTML = '<div class="text-xs text-slate-500 text-center py-4">Waiting for data...</div>';
-    document.getElementById('colCards8PM').innerHTML = '<div class="text-xs text-slate-500 text-center py-4">Waiting for data...</div>';
-    return;
-  }
+  const tickets = [];
+  const seriesList = { '1PM': ['78A', '91E', '84B', '88D', '79C'], '6PM': ['81G', '79C', '85J', '96K', '88D'], '8PM': ['58C', '88D', '39A', '77C', '81G'] };
+  const prefixList = { '1PM': ['5', '7', '4', '8', '6'], '6PM': ['5', '9', '3', '7', '4'], '8PM': ['5', '4', '9', '6', '7'] };
 
-  const cutoff = new Date(); cutoff.setDate(cutoff.getDate() - windowDays);
-  const cutoffStr = cutoff.toISOString().slice(0, 10);
-  const scoped = masterDB.filter(d => d.date >= cutoffStr);
-  const activeDraws = scoped.length >= 3 ? scoped : masterDB;
-
-  document.getElementById('statTotalDraws').textContent = activeDraws.length.toLocaleString();
-  document.getElementById('statTotalTickets').textContent = activeDraws.reduce((acc, d) => acc + d.numbers.length, 0).toLocaleString();
-
-  cachedMiddleRankings = evaluateUniverse(activeDraws, 'MIDDLE');
-  cachedBackRankings = evaluateUniverse(activeDraws, 'BACK');
-
-  const bestM = [...cachedMiddleRankings].sort((a, b) => b.score - a.score)[0];
-  const bestB = [...cachedBackRankings].sort((a, b) => b.score - a.score)[0];
-
-  document.getElementById('statHotMiddle').textContent = bestM ? `${bestM.key}` : '--';
-  document.getElementById('statHotBack').textContent = bestB ? `${bestB.key}` : '--';
-
-  renderSlotColumnCards('1PM', 'colCards1PM', activeDraws);
-  renderSlotColumnCards('6PM', 'colCards6PM', activeDraws);
-  renderSlotColumnCards('8PM', 'colCards8PM', activeDraws);
-}
-
-function generateFiveFullPredictions(slotCode, draws) {
-  const mRanked = evaluateUniverse(draws, 'MIDDLE').sort((a, b) => b.score - a.score);
-  const bRanked = evaluateUniverse(draws, 'BACK').sort((a, b) => b.score - a.score);
-  const seriesMap = { '1PM': ['78A','91E','84B','88D','79C'], '6PM': ['81G','79C','85J','96K','88D'], '8PM': ['58C','88D','39A','77C','81G'] };
-  const prefixMap = { '1PM': ['5','7','4','8','6'], '6PM': ['5','9','3','7','4'], '8PM': ['5','4','9','6','7'] };
-
-  const predictions = [];
   for (let i = 0; i < 5; i++) {
-    const m = mRanked[i] || mRanked[0];
-    const b = bRanked[i] || bRanked[0];
-    const series = seriesMap[slotCode][i];
-    const lead = prefixMap[slotCode][i];
-    const full5 = `${lead}${m.key}${b.key}`;
-    predictions.push({
-      full5, series, fullTicket: `${series} ${full5}`, mid: m.key, back: b.key,
-      combinedScore: Math.round((m.score + b.score) / 2)
+    const mid = ranked[i * 2]; 
+    const back = ranked[(i * 2) + 1];
+    const series = seriesList[targetSlot][i];
+    const prefix = prefixList[targetSlot][i];
+    const full5 = `${prefix}${mid.key}${back.key}`;
+
+    tickets.push({
+      ticket: `${series} ${full5}`,
+      mid: mid.key, back: back.key,
+      conf: Math.round((mid.score + back.score) / 2),
+      reason: mid.reasons[0] || 'Balanced Pattern'
     });
   }
-  return predictions;
+
+  // Save for hit tracking
+  const predId = `${targetSlot}_${new Date().toISOString().split('T')[0]}`;
+  const existingIdx = savedPredictions.findIndex(p => p.id === predId);
+  const predRecord = { id: predId, date: new Date().toISOString().split('T')[0], slot: targetSlot, tickets, hits: [] };
+  
+  if (existingIdx >= 0) savedPredictions[existingIdx] = predRecord;
+  else savedPredictions.push(predRecord);
+  localStorage.setItem(PRED_KEY, JSON.stringify(savedPredictions));
+
+  return tickets;
 }
 
-function renderSlotColumnCards(slotCode, containerId, draws) {
-  const preds = generateFiveFullPredictions(slotCode, draws);
-  const tierLabels = ['1st Prize (₹1Cr)', '2nd Prize (₹10k)', '3rd Prize (₹500)', '4th Prize (₹250)', '5th Prize (₹120)'];
+// ================= HIT EVALUATION (RED CIRCLES) =================
+function evaluateHits() {
+  if (allData.length === 0) return;
+  const latestDraw = allData[allData.length - 1]; 
+  
+  const relevantPreds = savedPredictions.filter(p => p.slot === latestDraw.slot && p.date <= latestDraw.date && p.id !== `${latestDraw.slot}_${latestDraw.date}`);
+  if (relevantPreds.length === 0) return;
 
-  document.getElementById(containerId).innerHTML = preds.map((p, idx) => `
-    <div class="studio-card rounded-xl p-3 space-y-2">
-      <div class="flex justify-between items-center">
-        <span class="text-[10px] font-extrabold text-slate-400 uppercase">${tierLabels[idx]}</span>
-        <span class="text-[10px] font-black text-emerald-400 mono">${p.combinedScore}% Match</span>
-      </div>
-      <div class="bg-slate-950 border border-indigo-500/30 rounded-lg p-2 flex justify-between items-center">
-        <div class="text-sm font-black text-white mono">${p.fullTicket}</div>
-        <div class="text-[10px] text-cyan-300 mono">Mid: ${p.mid} | Back: ${p.back}</div>
-      </div>
-    </div>
-  `).join('');
+  const latestPred = relevantPreds[relevantPreds.length - 1];
+  let hitsFound = [];
+
+  latestPred.tickets.forEach(ticket => {
+    latestDraw.numbers.forEach(num => {
+      const num4 = num.length === 5 ? num.slice(1) : num;
+      if (num4.includes(ticket.mid) || num4.includes(ticket.back)) {
+        if(!hitsFound.includes(num4)) hitsFound.push(num4);
+      }
+    });
+  });
+
+  if (hitsFound.length > 0) {
+    latestPred.hits = [...new Set([...latestPred.hits, ...hitsFound])];
+    localStorage.setItem(PRED_KEY, JSON.stringify(savedPredictions));
+  }
 }
 
-function renderArchiveFeed() {
-  let list = [...masterDB].reverse();
-  if (list.length === 0) {
-    document.getElementById('archiveFeedContainer').innerHTML = '<div class="text-xs text-slate-500 text-center py-4">Archive empty.</div>';
+// ================= RENDER UI =================
+function renderUI() {
+  ['1PM', '6PM', '8PM'].forEach(slot => {
+    const container = document.getElementById(`pred-${slot}`);
+    const preds = generateLogicPredictions(slot);
+
+    if (!preds) {
+      container.innerHTML = `<div class="text-center py-6"><p class="text-xs text-slate-500">Not enough historical data for logic prediction.</p></div>`;
+      return;
+    }
+
+    container.innerHTML = preds.map((p, idx) => `
+      <div class="bg-slate-900/80 border border-slate-700 rounded-xl p-3 flex justify-between items-center shadow-md hover:border-emerald-500/50 transition">
+        <div>
+          <div class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Target ${idx + 1}</div>
+          <div class="text-base font-black text-white mono tracking-wider mt-0.5">${p.ticket}</div>
+        </div>
+        <div class="text-right">
+          <div class="text-xs font-black text-emerald-400">${p.conf}% Match</div>
+          <div class="text-[9px] text-slate-400 mt-0.5 max-w-[80px] truncate" title="${p.reason}">${p.reason}</div>
+        </div>
+      </div>
+    `).join('');
+  });
+  renderHistory();
+}
+
+function renderHistory() {
+  const container = document.getElementById('historyContainer');
+  if (allData.length === 0) {
+    container.innerHTML = `<p class="text-xs text-slate-500 text-center py-4">No data available yet. Check back after results are published.</p>`;
     return;
   }
-  document.getElementById('archiveFeedContainer').innerHTML = list.map(draw => `
-    <div class="studio-card rounded-xl p-4 flex flex-col lg:flex-row justify-between items-start lg:items-center gap-3">
-      <div>
-        <div class="flex gap-2 text-xs font-black">
-          <span class="bg-indigo-500/20 text-indigo-300 px-2 py-0.5 rounded">${draw.date}</span>
-          <span class="bg-emerald-500/20 text-emerald-300 px-2 py-0.5 rounded">${draw.slot}</span>
+
+  const reversedData = [...allData].reverse();
+  
+  container.innerHTML = reversedData.map((draw) => {
+    const predRecord = savedPredictions.find(p => p.slot === draw.slot && p.hits && draw.numbers.some(n => p.hits.includes(n)));
+    const hitNums = predRecord ? predRecord.hits : [];
+
+    const displayNumbers = draw.numbers.map(n => {
+      const isHit = hitNums.includes(n);
+      const displayVal = n.slice(-4); 
+      
+      if (isHit) {
+        return `<span class="red-hit w-9 h-9 text-[11px] font-black mono m-0.5" title="Prediction Hit!">${displayVal}</span>`;
+      }
+      return `<span class="inline-flex items-center justify-center w-9 h-9 text-[11px] font-bold text-slate-300 bg-slate-800 rounded m-0.5">${displayVal}</span>`;
+    }).join('');
+
+    return `
+      <div class="bg-slate-900/60 border border-slate-800 rounded-xl p-4 mb-3">
+        <div class="flex justify-between items-center border-b border-slate-800 pb-2 mb-3">
+          <div class="flex gap-2 text-xs">
+            <span class="bg-indigo-500/20 text-indigo-300 px-2 py-0.5 rounded font-bold">${draw.date}</span>
+            <span class="bg-emerald-500/20 text-emerald-300 px-2 py-0.5 rounded font-bold">${draw.slot}</span>
+          </div>
+          <span class="text-sm font-black text-amber-400 mono">${draw.firstPrize}</span>
         </div>
-        <div class="text-xs mt-1 text-slate-400"><b>1st Prize:</b> <span class="text-amber-300">${draw.firstPrizeFull}</span></div>
-        <div class="text-[10px] text-slate-500 mt-1 line-clamp-1">${draw.numbers.slice(0, 10).join(', ')}...</div>
+        <div class="flex flex-wrap gap-1">
+          ${displayNumbers}
+        </div>
       </div>
-    </div>
-  `).join('');
+    `;
+  }).join('');
 }
 
-// Load initial data
-try {
-  const stored = JSON.parse(localStorage.getItem(DB_KEY));
-  if (stored && stored.length > 0) masterDB = stored;
-} catch (e) {}
-
-runMasterEngine();
+// ================= START AUTOMATION =================
+window.onload = () => {
+  // Inject demo data if empty so user doesn't see a blank screen while fetching
+  if (allData.length === 0) {
+    const today = new Date();
+    for(let i=1; i<=3; i++) {
+      const d = new Date(today); d.setDate(d.getDate() - i);
+      const dStr = d.toISOString().slice(0,10);
+      allData.push({
+        date: dStr, slot: '8PM', firstPrize: '58C 53977',
+        numbers: ['53977','10927','35416','41190','54254','55907','58352','58631','62324','65669','88396','1421','4532','6789','1122','3344']
+      });
+    }
+  }
+  renderUI(); // Render immediately
+  autoSync(); // Start auto fetch in background
+};
 </script>
 </body>
 </html>
