@@ -3,17 +3,23 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Lottery Master Intelligence — Auto-Pilot</title>
+  <title>Nagaland State Lottery — Master Intelligence Studio V15</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@500;600;700;800&display=swap');
+    :root { --bg-primary: #05070d; --card-bg: rgba(11, 15, 25, 0.90); }
     body {
-      font-family: 'Inter', sans-serif; background-color: #05070d;
-      background-image: radial-gradient(at 0% 0%, rgba(79, 70, 229, 0.15) 0px, transparent 50%), radial-gradient(at 100% 0%, rgba(16, 185, 129, 0.12) 0px, transparent 50%);
+      font-family: 'Inter', sans-serif; background-color: var(--bg-primary);
+      background-image: radial-gradient(at 0% 0%, rgba(79, 70, 229, 0.15) 0px, transparent 50%), radial-gradient(at 100% 0%, rgba(16, 185, 129, 0.12) 0px, transparent 50%), radial-gradient(at 50% 100%, rgba(217, 70, 239, 0.08) 0px, transparent 50%);
       color: #f8fafc; min-height: 100vh;
     }
     .mono { font-family: 'JetBrains Mono', monospace; }
-    .glass { background: rgba(11, 15, 25, 0.90); backdrop-filter: blur(18px); border: 1px solid rgba(255, 255, 255, 0.08); }
+    .studio-card { background: var(--card-bg); backdrop-filter: blur(18px); border: 1px solid rgba(255, 255, 255, 0.08); transition: all 0.25s; }
+    .studio-card:hover { border-color: rgba(99, 102, 241, 0.5); box-shadow: 0 14px 38px -12px rgba(99, 102, 241, 0.3); }
+    .btn-pro { transition: all 0.2s; cursor: pointer; user-select: none; position: relative; overflow: hidden; }
+    .btn-pro:active { transform: scale(0.95); }
+    .custom-scroll::-webkit-scrollbar { width: 6px; height: 6px; }
+    .custom-scroll::-webkit-scrollbar-thumb { background: #334155; border-radius: 6px; }
     
     /* লাল বৃত্তের অ্যানিমেশন (Red Circle Hit) */
     @keyframes redPulse {
@@ -29,77 +35,95 @@
       border-radius: 50%; 
       display: inline-flex; align-items: center; justify-content: center;
     }
-    /* লোডিং স্পিনার */
-    .loader {
-      border: 3px solid rgba(255,255,255,0.1);
-      border-top-color: #10b981;
-      border-radius: 50%;
-      width: 20px; height: 20px;
-      animation: spin 1s linear infinite;
-      display: inline-block; vertical-align: middle; margin-right: 8px;
-    }
-    @keyframes spin { to { transform: rotate(360deg); } }
+    .gazette-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(68px, 1fr)); gap: 6px; }
   </style>
 </head>
 <body class="p-3 md:p-6">
 
-  <div id="toast" class="fixed top-5 right-5 z-50 bg-slate-800 border-l-4 border-emerald-500 text-white px-4 py-3 rounded shadow-lg hidden text-sm font-bold"></div>
+  <div id="toastBox" class="fixed bottom-5 right-5 z-50 space-y-2 max-w-sm pointer-events-none"></div>
 
-  <div class="max-w-6xl mx-auto space-y-6">
+  <div class="max-w-7xl mx-auto space-y-6">
 
-    <!-- HEADER -->
-    <header class="glass rounded-2xl p-6 flex flex-col md:flex-row justify-between items-center gap-4">
-      <div>
-        <h1 class="text-2xl font-black text-white">Lottery Master <span class="text-emerald-400">Intelligence</span></h1>
-        <p class="text-xs text-slate-400 mt-1">Fully Automated Logic Engine • Strict Palta/Mirror Analysis</p>
+    <!-- TOP HEADER -->
+    <header class="studio-card rounded-2xl p-5 flex flex-col xl:flex-row justify-between items-start xl:items-center gap-4">
+      <div class="space-y-1">
+        <div class="flex flex-wrap items-center gap-2">
+          <span class="h-2.5 w-2.5 rounded-full bg-emerald-400 animate-ping"></span>
+          <span class="text-[11px] font-extrabold uppercase tracking-widest text-emerald-400 mono">V15.0 PRO • DEEP LOGIC</span>
+          <span id="liveStatusBadge" class="text-[11px] bg-indigo-500/20 border border-indigo-500/40 text-indigo-300 px-2.5 py-0.5 rounded-md mono font-bold">Ready</span>
+        </div>
+        <h1 class="text-2xl md:text-3xl font-black tracking-tight text-white">
+          Nagaland State Lottery <span class="bg-gradient-to-r from-indigo-400 via-cyan-300 to-emerald-400 bg-clip-text text-transparent">Master Intelligence Studio</span>
+        </h1>
+        <p class="text-slate-400 text-xs md:text-sm">
+          Deep Logic Engine • Strict Palta/Mirror Analysis • Auto History & Red Circle Hits
+        </p>
       </div>
-      <div id="syncStatus" class="flex items-center text-xs text-indigo-300 bg-indigo-500/10 px-3 py-2 rounded-xl border border-indigo-500/20">
-        <span class="loader"></span> Auto-Syncing Data...
+
+      <div class="flex flex-wrap items-center gap-2.5 w-full xl:w-auto">
+        <button onclick="triggerManualSync()" id="syncBtn" class="btn-pro bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-slate-950 font-black px-4 py-2 rounded-xl text-xs md:text-sm shadow-lg flex items-center gap-1.5">
+          <span>⚡ SYNC & PREDICT NOW</span>
+        </button>
       </div>
     </header>
 
-    <!-- PREDICTIONS GRID -->
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-      <!-- 1PM -->
-      <div class="glass rounded-2xl p-4 border-t-4 border-amber-400">
-        <div class="flex justify-between items-center mb-4 border-b border-slate-800 pb-2">
-          <h3 class="text-lg font-black text-white">1:00 PM</h3>
-          <span class="text-[10px] bg-amber-500/20 text-amber-300 px-2 py-1 rounded">Morning</span>
+    <!-- MAIN GRID: PREDICTIONS -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      
+      <!-- 1PM DRAW -->
+      <div class="studio-card rounded-2xl p-5 border-t-4 border-t-amber-400 space-y-4">
+        <div class="flex justify-between items-center border-b border-slate-800 pb-3">
+          <div>
+            <span class="text-[10px] font-black uppercase tracking-widest text-amber-400 mono">DEAR MORNING</span>
+            <h3 class="text-xl font-black text-white mono">1:00 PM DRAW</h3>
+          </div>
+          <button onclick="openPdfModal('1PM')" class="btn-pro text-xs bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/40 px-3 py-1.5 rounded-xl font-extrabold">View Result PDF →</button>
         </div>
-        <div id="pred-1PM" class="space-y-3"><p class="text-xs text-slate-500">Analyzing...</p></div>
+        <div id="colCards1PM" class="space-y-3.5"></div>
       </div>
-      <!-- 6PM -->
-      <div class="glass rounded-2xl p-4 border-t-4 border-cyan-400">
-        <div class="flex justify-between items-center mb-4 border-b border-slate-800 pb-2">
-          <h3 class="text-lg font-black text-white">6:00 PM</h3>
-          <span class="text-[10px] bg-cyan-500/20 text-cyan-300 px-2 py-1 rounded">Day</span>
+
+      <!-- 6PM DRAW -->
+      <div class="studio-card rounded-2xl p-5 border-t-4 border-t-cyan-400 space-y-4">
+        <div class="flex justify-between items-center border-b border-slate-800 pb-3">
+          <div>
+            <span class="text-[10px] font-black uppercase tracking-widest text-cyan-400 mono">DEAR DAY</span>
+            <h3 class="text-xl font-black text-white mono">6:00 PM DRAW</h3>
+          </div>
+          <button onclick="openPdfModal('6PM')" class="btn-pro text-xs bg-cyan-500/20 hover:bg-cyan-500/30 text-cyan-300 border border-cyan-500/40 px-3 py-1.5 rounded-xl font-extrabold">View Result PDF →</button>
         </div>
-        <div id="pred-6PM" class="space-y-3"><p class="text-xs text-slate-500">Analyzing...</p></div>
+        <div id="colCards6PM" class="space-y-3.5"></div>
       </div>
-      <!-- 8PM -->
-      <div class="glass rounded-2xl p-4 border-t-4 border-fuchsia-400">
-        <div class="flex justify-between items-center mb-4 border-b border-slate-800 pb-2">
-          <h3 class="text-lg font-black text-white">8:00 PM</h3>
-          <span class="text-[10px] bg-fuchsia-500/20 text-fuchsia-300 px-2 py-1 rounded">Night</span>
+
+      <!-- 8PM DRAW -->
+      <div class="studio-card rounded-2xl p-5 border-t-4 border-t-fuchsia-400 space-y-4">
+        <div class="flex justify-between items-center border-b border-slate-800 pb-3">
+          <div>
+            <span class="text-[10px] font-black uppercase tracking-widest text-fuchsia-400 mono">DEAR NIGHT</span>
+            <h3 class="text-xl font-black text-white mono">8:00 PM DRAW</h3>
+          </div>
+          <button onclick="openPdfModal('8PM')" class="btn-pro text-xs bg-fuchsia-500/20 hover:bg-fuchsia-500/30 text-fuchsia-300 border border-fuchsia-500/40 px-3 py-1.5 rounded-xl font-extrabold">View Result PDF →</button>
         </div>
-        <div id="pred-8PM" class="space-y-3"><p class="text-xs text-slate-500">Analyzing...</p></div>
+        <div id="colCards8PM" class="space-y-3.5"></div>
       </div>
     </div>
 
-    <!-- HISTORY & HITS -->
-    <div class="glass rounded-2xl p-5">
-      <h3 class="text-lg font-black text-white mb-2">📜 History & Hits</h3>
-      <p class="text-xs text-slate-400 mb-4">প্রেডিকশন করা নাম্বার রেজাল্টে মিললে সেটি <b class="text-rose-400">লাল বৃত্তে (Red Circle)</b> ঘেরা থাকবে।</p>
-      <div id="historyContainer" class="space-y-4 max-h-[600px] overflow-y-auto pr-2">
-        <p class="text-xs text-slate-500">Loading history...</p>
+    <!-- HISTORY & HITS SECTION -->
+    <div class="studio-card rounded-2xl p-5">
+      <div class="flex justify-between items-center mb-4 border-b border-slate-800 pb-3">
+        <div>
+          <h3 class="text-lg font-black text-white">📜 Prediction History & Hits</h3>
+          <p class="text-xs text-slate-400">প্রেডিকশন করা নাম্বার রেজাল্টে মিললে সেটি <b class="text-rose-400">লাল বৃত্তে (Red Circle)</b> ঘেরা থাকবে।</p>
+        </div>
+      </div>
+      <div id="historyContainer" class="space-y-4 max-h-[600px] overflow-y-auto custom-scroll pr-1">
+        <p class="text-xs text-slate-500 text-center py-4">Loading history...</p>
       </div>
     </div>
 
     <!-- FOOTER (Required for API Verification) -->
-    <footer class="text-center py-6 border-t border-slate-800/50 mt-10">
-      <p class="text-xs text-slate-500">
-        Powered by <a href="https://lottery.sambad.com/" class="text-emerald-500 hover:underline">Dear Lottery</a> API
-      </p>
+    <footer class="studio-card rounded-2xl p-5 border border-amber-500/30 text-xs text-slate-400 space-y-1.5 text-center">
+      <p>This platform integrates historical data for mathematical pattern recognition. Lottery draws are independent random events. Play responsibly.</p>
+      <p class="mt-2"><a href="https://lottery.sambad.com/" class="text-emerald-500 hover:underline">Dear Lottery</a> Official API</p>
     </footer>
 
   </div>
@@ -111,18 +135,20 @@
 const MY_API_TOKEN = "PASTE_YOUR_TOKEN_HERE"; 
 
 // ================= DATA STORAGE =================
-const DB_KEY = 'LOTTERY_AUTOPILOT_DATA';
-const PRED_KEY = 'LOTTERY_AUTOPILOT_PREDS';
+const DB_KEY = 'LOTTERY_MASTER_V15_DATA';
+const PRED_KEY = 'LOTTERY_MASTER_V15_PREDS';
 let allData = JSON.parse(localStorage.getItem(DB_KEY) || '[]');
 let savedPredictions = JSON.parse(localStorage.getItem(PRED_KEY) || '[]');
 
 // ================= UTILITIES =================
 function showToast(msg, isError = false) {
-  const t = document.getElementById('toast');
-  t.textContent = msg;
-  t.className = `fixed top-5 right-5 z-50 px-4 py-3 rounded shadow-lg text-sm font-bold border-l-4 ${isError ? 'border-rose-500 bg-slate-800 text-rose-200' : 'border-emerald-500 bg-slate-800 text-emerald-200'}`;
-  t.classList.remove('hidden');
-  setTimeout(() => t.classList.add('hidden'), 3000);
+  const box = document.getElementById('toastBox');
+  const colors = isError ? 'border-rose-500 bg-slate-900/95 text-rose-200' : 'border-emerald-500 bg-slate-900/95 text-emerald-200';
+  const el = document.createElement('div');
+  el.className = `px-4 py-3 rounded-xl border-l-4 shadow-2xl text-xs font-extrabold mono transition-all duration-300 ${colors}`;
+  el.innerHTML = msg;
+  box.appendChild(el);
+  setTimeout(() => { el.style.opacity = '0'; setTimeout(() => el.remove(), 280); }, 3200);
 }
 
 function getPalta(s) { return s.split('').reverse().join(''); }
@@ -164,55 +190,38 @@ async function fetchResult(dateStr, slot) {
   return null;
 }
 
-// ================= AUTO SYNC ON LOAD =================
-async function autoSync() {
+// ================= SYNC & PREDICT =================
+async function triggerManualSync() {
   if (!MY_API_TOKEN || MY_API_TOKEN === "PASTE_YOUR_TOKEN_HERE") {
-    document.getElementById('syncStatus').innerHTML = '⚠️ API Token Missing. Paste it in code.';
-    document.getElementById('syncStatus').className = 'flex items-center text-xs text-rose-300 bg-rose-500/10 px-3 py-2 rounded-xl border border-rose-500/20';
-    renderUI(); // Render whatever demo data we have
+    showToast('⚠️ Please paste your API Token in the code first!', true);
     return;
   }
 
-  const today = new Date();
-  const todayStr = today.toISOString().split('T')[0];
-  let fetchedAny = false;
+  document.getElementById('syncBtn').innerHTML = `<span>⏳ SYNCING...</span>`;
+  showToast('Fetching latest results...');
+  
+  const today = new Date().toISOString().split('T')[0];
+  let fetched = 0;
 
-  // 1. Fetch past 7 days for deep logic (if we don't have enough data)
-  if (allData.length < 15) {
-    for (let i = 1; i <= 7; i++) {
-      const d = new Date(today); d.setDate(d.getDate() - i);
-      const dStr = d.toISOString().split('T')[0];
-      for (const slot of ['1PM', '6PM', '8PM']) {
-        const data = await fetchResult(dStr, slot);
-        if (data) {
-          if (!allData.some(x => x.date === dStr && x.slot === slot)) {
-            allData.push(data);
-            fetchedAny = true;
-          }
-        }
-      }
-    }
-  }
-
-  // 2. Fetch today's data
   for (const slot of ['1PM', '6PM', '8PM']) {
-    const data = await fetchResult(todayStr, slot);
+    const data = await fetchResult(today, slot);
     if (data) {
-      allData = allData.filter(d => !(d.date === todayStr && d.slot === slot));
+      allData = allData.filter(d => !(d.date === today && d.slot === slot));
       allData.push(data);
-      fetchedAny = true;
+      fetched++;
     }
   }
 
-  if (fetchedAny) {
+  if (fetched > 0) {
     allData.sort((a, b) => new Date(a.date) - new Date(b.date));
     localStorage.setItem(DB_KEY, JSON.stringify(allData));
+    showToast(`✅ Synced ${fetched} draws!`);
     evaluateHits();
+  } else {
+    showToast('No new data found for today yet.', true);
   }
 
-  document.getElementById('syncStatus').innerHTML = '✅ System Up to Date';
-  document.getElementById('syncStatus').className = 'flex items-center text-xs text-emerald-300 bg-emerald-500/10 px-3 py-2 rounded-xl border border-emerald-500/20';
-  
+  document.getElementById('syncBtn').innerHTML = `<span>⚡ SYNC & PREDICT NOW</span>`;
   renderUI();
 }
 
@@ -239,7 +248,7 @@ function generateLogicPredictions(targetSlot) {
       if (stats[mid]) {
         stats[mid].hits++;
         stats[mid].lastSeenIdx = dIdx;
-        if (posIdx < 2) stats[mid].score += 5; // High weight for 1st prize
+        if (posIdx < 2) stats[mid].score += 5;
       }
       if (stats[bck]) {
         stats[bck].hits++;
@@ -307,7 +316,6 @@ function generateLogicPredictions(targetSlot) {
     });
   }
 
-  // Save for hit tracking
   const predId = `${targetSlot}_${new Date().toISOString().split('T')[0]}`;
   const existingIdx = savedPredictions.findIndex(p => p.id === predId);
   const predRecord = { id: predId, date: new Date().toISOString().split('T')[0], slot: targetSlot, tickets, hits: [] };
@@ -348,11 +356,11 @@ function evaluateHits() {
 // ================= RENDER UI =================
 function renderUI() {
   ['1PM', '6PM', '8PM'].forEach(slot => {
-    const container = document.getElementById(`pred-${slot}`);
+    const container = document.getElementById(`colCards${slot}`);
     const preds = generateLogicPredictions(slot);
 
     if (!preds) {
-      container.innerHTML = `<div class="text-center py-6"><p class="text-xs text-slate-500">Not enough historical data for logic prediction.</p></div>`;
+      container.innerHTML = `<div class="text-center py-6"><p class="text-xs text-slate-500">No historical data available.</p></div>`;
       return;
     }
 
@@ -375,7 +383,7 @@ function renderUI() {
 function renderHistory() {
   const container = document.getElementById('historyContainer');
   if (allData.length === 0) {
-    container.innerHTML = `<p class="text-xs text-slate-500 text-center py-4">No data available yet. Check back after results are published.</p>`;
+    container.innerHTML = `<p class="text-xs text-slate-500 text-center py-4">No history yet. Sync to fetch results.</p>`;
     return;
   }
 
@@ -412,9 +420,53 @@ function renderHistory() {
   }).join('');
 }
 
+// ================= PDF & RESULT VIEWER =================
+function openPdfModal(slot) {
+  let slotData = allData.filter(d => d.slot === slot).sort((a, b) => new Date(b.date) - new Date(a.date))[0];
+  
+  if (!slotData) {
+    showToast('No data available for this slot yet.', true);
+    return;
+  }
+
+  const [y, m, d] = slotData.date.split('-');
+  const pdfUrl = `https://lottery.sambad.com/pdf/lottery-sambad-${slot.toLowerCase()}-${d}-${m}-${y}.pdf`;
+
+  // Create modal overlay
+  const modal = document.createElement('div');
+  modal.className = 'fixed inset-0 bg-black/85 backdrop-blur-md z-50 flex items-center justify-center p-4';
+  modal.innerHTML = `
+    <div class="bg-slate-900 rounded-2xl w-full max-w-2xl p-6 border border-indigo-500/50 space-y-4 shadow-2xl">
+      <div class="flex justify-between items-center border-b border-slate-700 pb-3">
+        <h3 class="text-xl font-black text-white">${slot} Result — ${slotData.date}</h3>
+        <button onclick="this.closest('.fixed').remove()" class="text-slate-400 hover:text-white font-bold text-xl">&times;</button>
+      </div>
+      
+      <div class="bg-slate-950 p-4 rounded-xl text-center space-y-2 border border-slate-800">
+        <div class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">First Prize</div>
+        <div class="text-3xl font-black text-amber-400 mono tracking-widest">${slotData.firstPrize}</div>
+      </div>
+
+      <div class="grid grid-cols-2 gap-3">
+        <a href="${pdfUrl}" target="_blank" class="btn-pro bg-indigo-600 hover:bg-indigo-500 text-white text-center font-bold py-2 rounded-xl transition text-sm">
+          👁️ View Original PDF
+        </a>
+        <a href="${pdfUrl}" download class="btn-pro bg-emerald-600 hover:bg-emerald-500 text-white text-center font-bold py-2 rounded-xl transition text-sm">
+          📥 Download PDF
+        </a>
+      </div>
+
+      <div class="text-xs text-slate-400 text-center">
+        Winning Numbers: ${slotData.numbers.slice(0, 10).join(', ')}...
+      </div>
+    </div>
+  `;
+  document.body.appendChild(modal);
+}
+
 // ================= START AUTOMATION =================
 window.onload = () => {
-  // Inject demo data if empty so user doesn't see a blank screen while fetching
+  // Demo data for UI preview if empty
   if (allData.length === 0) {
     const today = new Date();
     for(let i=1; i<=3; i++) {
@@ -427,7 +479,6 @@ window.onload = () => {
     }
   }
   renderUI(); // Render immediately
-  autoSync(); // Start auto fetch in background
 };
 </script>
 </body>
