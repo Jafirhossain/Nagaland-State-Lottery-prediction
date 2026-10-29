@@ -465,7 +465,7 @@ function getDigitSum(s) {
 
 function getApiBase() {
   if (customWorkerUrl && customWorkerUrl.trim() !== '') {
-    return customWorkerUrl.replace(//+$/, '');
+    return customWorkerUrl.replace(/\/+$/, '');
   }
   if (window.location.protocol.startsWith('http')) {
     return window.location.origin;
